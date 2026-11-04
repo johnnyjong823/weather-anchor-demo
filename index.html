@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>氣象播報體驗</title>
+<link rel="stylesheet" href="css/style.css">
+<script>
+  // 記錄 content.js 載入時的錯誤，供 app.js 顯示（雙擊開啟時瀏覽器可能不提供行號）
+  window.__loadErrors = [];
+  window.addEventListener('error', function (e) {
+    window.__loadErrors.push({ file: e.filename || '', line: e.lineno || 0 });
+  });
+</script>
+<script src="content.js"></script>
+</head>
+<body>
+<div id="canvas">
+  <section id="home" class="screen">
+    <img class="home-logo" alt="" draggable="false">
+    <h1 class="home-title"></h1>
+    <p class="home-subtitle"></p>
+    <div class="cards"></div>
+  </section>
+
+  <section id="stage" class="screen">
+    <div class="stage-layers"></div>
+    <img class="stage-logo" alt="" draggable="false">
+    <button class="back" type="button">← 回首頁</button>
+  </section>
+
+  <div id="error" hidden></div>
+</div>
+<script src="js/app.js"></script>
+</body>
+</html>
