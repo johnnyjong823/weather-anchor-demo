@@ -34,6 +34,7 @@
 
   var charts = [];
   var current = null;       // 目前顯示的圖資 id；首頁為 null
+  var turns = Object.create(null);   // 每張圖資已顯示幾次，用來輪流切換多張底圖
   var layerSeq = 0;
   var homeTimer = 0;
 
@@ -57,10 +58,9 @@
       if (!/^[a-z0-9-]+$/.test(ch.id || '')) return n + '的 id 只能用小寫英文、數字、減號';
       if (seen[ch.id]) return n + '的 id「' + ch.id + '」重複';
       seen[ch.id] = true;
-      var fields = ['name', 'stage'];
-      for (var j = 0; j < fields.length; j++) {
-        if (typeof ch[fields[j]] !== 'string' || !ch[fields[j]]) return n + '缺少 ' + fields[j];
-      }
+      if (typeof ch.name !== 'string' || !ch.name) return n + '缺少 name';
+      var st = stagesOf(ch);
+      if (!st.length || st.some(function (s) { return typeof s !== 'string'; })) return n + '缺少 stage 底圖';
     }
     return null;
   }
@@ -97,6 +97,16 @@
 
   function list(v) {
     return Array.isArray(v) ? v.filter(Boolean) : v ? [v] : [];
+  }
+
+  // stage 可以是一個檔案，或多個檔案的清單 [ 'A', 'B' ]（每次進入輪流顯示下一張）
+  function stagesOf(ch) { return list(ch.stage); }
+
+  function nextStage(ch) {
+    var st = stagesOf(ch);
+    var i = turns[ch.id] || 0;
+    turns[ch.id] = i + 1;
+    return st[i % st.length];
   }
 
   // 色碼打錯時改用預設色，避免卡片變透明看不見字
@@ -139,12 +149,12 @@
     if (c.logo) stageLogo.src = c.logo; else stageLogo.hidden = true;
   }
 
-  function buildLayer(ch) {
+  function buildLayer(ch, src) {
     var layer = el('div', 'layer');
     layer.style.setProperty('--c', colorOf(ch));
 
     var media, ready;
-    if (VIDEO_EXT.test(ch.stage)) {
+    if (VIDEO_EXT.test(src)) {
       media = el('video', 'layer-media');
       media.muted = true;
       media.loop = true;
@@ -156,19 +166,26 @@
         media.addEventListener('error', resolve, { once: true });
       });
       keepPlaying(media);
-      media.src = ch.stage;
+      media.src = src;
     } else {
+      // 非 16:9 的圖完整顯示在中間，兩側用同一張圖模糊放大填滿
+      var backdrop = el('img', 'layer-backdrop');
+      backdrop.alt = '';
+      backdrop.draggable = false;
+      backdrop.src = src;
+      backdrop.addEventListener('error', function () { backdrop.remove(); }, { once: true });
+      layer.appendChild(backdrop);
       media = el('img', 'layer-media');
       media.alt = '';
       media.draggable = false;
-      media.src = ch.stage;
+      media.src = src;
       ready = media.decode ? media.decode().catch(function () {}) : Promise.resolve();
     }
     media.addEventListener('error', function () {
       if (media.dataset.played) return;          // 播放過的影片出錯由 keepPlaying 重載
       var miss = el('div', 'layer-missing');
       var box = el('div', '', '找不到底圖檔案');
-      box.appendChild(el('small', '', ch.stage));
+      box.appendChild(el('small', '', src));
       miss.appendChild(box);
       media.replaceWith(miss);
     }, { once: true });
@@ -223,7 +240,7 @@
     current = ch.id;
 
     var seq = ++layerSeq;
-    var built = buildLayer(ch);
+    var built = buildLayer(ch, nextStage(ch));
     built.el.dataset.seq = seq;
     layers.appendChild(built.el);
     var timeout = new Promise(function (r) { setTimeout(r, READY_MAX_MS); });
@@ -298,7 +315,9 @@
 
   function preloadStageImages() {
     charts.forEach(function (ch) {
-      if (!VIDEO_EXT.test(ch.stage)) new Image().src = ch.stage;
+      stagesOf(ch).forEach(function (src) {
+        if (!VIDEO_EXT.test(src)) new Image().src = src;
+      });
     });
   }
 

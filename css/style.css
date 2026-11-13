@@ -210,7 +210,7 @@ body:not(.mouse-active) .card:hover {
 #stage { background: #000; }
 
 .stage-layers, .layer { position: absolute; inset: 0; }
-.layer { opacity: 0; transition: opacity var(--fade) ease; }
+.layer { overflow: hidden; opacity: 0; transition: opacity var(--fade) ease; }
 .layer.show { opacity: 1; }
 
 .layer-media {
@@ -218,7 +218,18 @@ body:not(.mouse-active) .card:hover {
   inset: 0;
   width: 100%;
   height: 100%;
+  object-fit: contain;
+}
+
+/* 非 16:9 底圖兩側的模糊填色（放大避免邊緣透出黑邊） */
+.layer-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
+  transform: scale(1.15);
+  filter: blur(36px) brightness(0.75);
 }
 
 .layer-missing {
