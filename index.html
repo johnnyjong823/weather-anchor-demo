@@ -2,7 +2,8 @@
 <html lang="zh-Hant-TW">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- 觸控平板（Fully Kiosk Browser）：鎖定縮放，避免操作者雙指或雙擊放大 -->
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>氣象播報體驗</title>
 <link rel="stylesheet" href="css/style.css">
 <script>
@@ -18,9 +19,11 @@
 <div id="canvas">
   <section id="home" class="screen">
     <img class="home-logo" alt="" draggable="false">
-    <h1 class="home-title"></h1>
-    <p class="home-subtitle"></p>
-    <div class="cards"></div>
+    <div class="home-inner">
+      <h1 class="home-title"></h1>
+      <p class="home-subtitle"></p>
+      <div class="cards"></div>
+    </div>
   </section>
 
   <section id="stage" class="screen">

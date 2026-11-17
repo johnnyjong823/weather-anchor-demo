@@ -5,7 +5,7 @@
   var W = 1920, H = 1080;
   var FADE_MS = 500;        // 與 CSS --fade 一致
   var READY_MAX_MS = 400;   // 等待底圖載入的上限，超過就先淡入
-  var IDLE_MS = 3000;       // 滑鼠閒置後隱藏游標與回首頁按鈕
+  var IDLE_MS = 5000;       // 觸控 / 滑鼠閒置後隱藏游標與回首頁按鈕
   var VIDEO_EXT = /\.(mp4|webm|m4v)([?#]|$)/i;
   var COLOR_DEFAULT = '#1e9be8';
 
@@ -39,11 +39,15 @@
   var homeTimer = 0;
 
   // ---------------------------------------------------------------- 畫布縮放
+  // 以 1920×1080 為設計基準，依螢幕寬度等比縮放；平板常見的 16:10、4:3 比 16:9 高，
+  // 畫布高度跟著延伸，多出來的上下空間由背景補滿，整個螢幕不留邊。
+  // （比 16:9 更寬的螢幕改以高度為準，避免內容超出畫面。）
   function fit() {
-    var s = Math.min(window.innerWidth / W, window.innerHeight / H);
-    var x = (window.innerWidth - W * s) / 2;
-    var y = (window.innerHeight - H * s) / 2;
-    canvas.style.transform = 'translate(' + x + 'px,' + y + 'px) scale(' + s + ')';
+    var vw = window.innerWidth, vh = window.innerHeight;
+    var s = Math.min(vw / W, vh / H);
+    canvas.style.width = vw / s + 'px';
+    canvas.style.height = vh / s + 'px';
+    canvas.style.transform = 'scale(' + s + ')';
   }
 
   // ---------------------------------------------------------------- 內容檢查
@@ -304,13 +308,31 @@
     e.preventDefault();
   }
 
+  // 手指點一下畫面或移動滑鼠 → 顯示回首頁按鈕（與游標），閒置後自動隱藏
   var idleTimer = 0;
-  function onMouseMove() {
+  function onActivity() {
     document.body.classList.add('mouse-active');
     clearTimeout(idleTimer);
     idleTimer = setTimeout(function () {
       document.body.classList.remove('mouse-active');
     }, IDLE_MS);
+  }
+
+  // 鎖定縮放的備援：viewport 設定之外，再擋雙指縮放、長按選單、Ctrl+滾輪 / Ctrl+± 縮放
+  function lockZoom() {
+    var block = function (e) { e.preventDefault(); };
+    document.addEventListener('touchmove', function (e) {
+      if (e.touches.length > 1) e.preventDefault();
+    }, { passive: false });
+    document.addEventListener('gesturestart', block);
+    document.addEventListener('dblclick', block);
+    document.addEventListener('contextmenu', block);
+    document.addEventListener('wheel', function (e) {
+      if (e.ctrlKey) e.preventDefault();
+    }, { passive: false });
+    window.addEventListener('keydown', function (e) {
+      if ((e.ctrlKey || e.metaKey) && /^(\+|=|-|_|0)$/.test(e.key)) e.preventDefault();
+    });
   }
 
   function preloadStageImages() {
@@ -325,6 +347,7 @@
   function init() {
     fit();
     window.addEventListener('resize', fit);
+    lockZoom();
 
     var c = window.CONTENT;
     var err = validate(c);
@@ -335,8 +358,8 @@
     $('.back').addEventListener('click', function () { go(null); });
     window.addEventListener('hashchange', route);
     window.addEventListener('keydown', onKey);
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mousedown', onMouseMove);
+    window.addEventListener('pointerdown', onActivity);
+    window.addEventListener('pointermove', onActivity);
     preloadStageImages();
     route();
   }
