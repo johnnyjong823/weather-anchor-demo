@@ -26,7 +26,7 @@ window.CONTENT = {
       color: '#1F9D55',
       thumb: 'images/surface-thumb.jpg',
       stage: ['images/surface-a.png', 'images/surface-b.png'],
-      labels: ['高＝高氣壓', '低＝低氣壓']
+      labels: ['H＝高氣壓', 'L＝低氣壓']
     },
     {
       id: 'radar',
@@ -35,8 +35,7 @@ window.CONTENT = {
       desc: ['看見雨正在哪裡下', '追蹤雨區的移動'],
       color: '#F07A1A',
       thumb: 'images/radar-thumb.jpg',
-      stage: ['images/radar-a.png', 'images/radar-b.png'],
-      labels: ['綠色＝小雨', '紅色＝大雨']
+      stage: ['images/radar-a.png', 'images/radar-b.png']
     },
     {
       id: 'satellite',
@@ -46,7 +45,7 @@ window.CONTENT = {
       color: '#6B3FA0',
       thumb: 'images/satellite-thumb.jpg',
       stage: ['images/satellite-a.jpg', 'images/satellite-b.jpg'],
-      labels: ['白色＝雲']
+      labels: ['色調強化']
     },
     {
       id: 'rainfall',
@@ -55,8 +54,7 @@ window.CONTENT = {
       desc: ['看看哪裡雨下得多', '提早防範豪雨災害'],
       color: '#1E9BE8',
       thumb: 'images/rainfall-thumb.jpg',
-      stage: ['images/rainfall-a.jpg', 'images/rainfall-b.jpg'],
-      labels: ['紅色＝雨量多', '藍色＝雨量少']
+      stage: ['images/rainfall-a.jpg', 'images/rainfall-b.jpg']
     }
   ]
 };
